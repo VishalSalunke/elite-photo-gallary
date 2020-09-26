@@ -1,25 +1,38 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+
+import Collage from './components/Collage'
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+    <Switch>
+      <Route 
+        exact path='/'  
+        render={(props) => (
+          <Collage {...props} defaultQuery={'random'} />
+        )}
+       />
+       <Route 
+        exact path='/sports'  
+        render={(props) => (
+          <Collage {...props} defaultQuery={'sports'} />
+        )}
+       />
+       <Route 
+        exact path='/mountains'  
+        render={(props) => (
+          <Collage {...props} defaultQuery={'mountains'} />
+        )}
+       />
+       <Route 
+        exact path='/forest'  
+        render={(props) => (
+          <Collage {...props} defaultQuery={'forest'} />
+        )}
+       />
+    </Switch>
+    </Router>
   );
 }
 
