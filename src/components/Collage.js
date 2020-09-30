@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useRef, useCallback} from "react"
 import superagent from "superagent"
 import { useHistory } from "react-router-dom"
 import capitalize from "capitalize"
@@ -21,8 +21,11 @@ const Collage = (props) => {
   let [loading, setLoading] = useState(false)
   const queryInput = useRef(null)
   const history = useHistory()
+  const [hasMore, setHasMore] = useState(false)
+  const [pageNumber, setPageNumber] = useState(1)
 
   const numberOfPhotos = process.env.REACT_APP_IMAGE_COUNT
+  console.log( process.env.REACT_APP_clientID)
   const url =
     "https://api.unsplash.com/photos/random/?count=" +
     numberOfPhotos +
@@ -30,19 +33,39 @@ const Collage = (props) => {
     process.env.REACT_APP_clientID
 
   useEffect(() => {
-    const photosUrl = query ? `${url}&query=${query}` : url
+    const photosUrl = query ? `${url}&query=${query}&page=${pageNumber}` : url
     setLoading(true)
     simpleGet({
       url: photosUrl,
       onSuccess: (res) => {
-        setPhotos(res.body)
+        // setPhotos(res.body)
+        setPhotos(prevPhotos => {
+          return [...new Set([...prevPhotos, ...res.body ])]})
         setLoading(false)
+        setHasMore(res.body.length > 0)
       },
     })
-  }, [query, url])
+  }, [pageNumber, query, url])
+
+  useEffect(() => {
+    setPhotos([])
+  }, [query])
+
+  const observer = useRef()
+  const lastPhotoElementRef = useCallback(node => {
+    if (loading) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPageNumber(prevPageNumber => prevPageNumber + 1)
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [loading, hasMore])
 
   const searchPhotos = (e) => {
     e.preventDefault()
+    setPageNumber(1)
     setQuery(queryInput.current.value)
     setcurrentSearch(queryInput.current.value)
     history.push(`/`)
@@ -50,6 +73,7 @@ const Collage = (props) => {
 
   const categorySearch = (query) => {
     queryInput.current.value = ""
+    setPageNumber(1)
     setQuery(query)
     setcurrentSearch(query)
     history.push(`/${query}`)
@@ -86,12 +110,16 @@ const Collage = (props) => {
         message={"loading..."}
       >
         <ul className="photo-grid">
-          {photos.map((photo) => {
-            return (
-              <li key={photo.id}>
+          {photos.map((photo, index) => {
+              if(photos.length === index + 1){
+               return( <li key={photo.id} ref={lastPhotoElementRef}>
                 <img src={photo.urls.regular} alt={photo.alt_description} />
-              </li>
-            )
+              </li>)
+              }else{
+                return(<li key={photo.id}>
+                <img src={photo.urls.regular} alt={photo.alt_description} />
+              </li>)
+              }
           })}
         </ul>
       </Loader>
