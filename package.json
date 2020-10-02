@@ -16,7 +16,8 @@
     "react-loader-advanced": "^1.7.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
-    "superagent": "^6.1.0"
+    "superagent": "^6.1.0",
+    "unsplash-js": "^6.3.0"
   },
   "engines": {
     "node": "12.14.1",
